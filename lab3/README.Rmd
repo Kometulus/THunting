@@ -1,0 +1,89 @@
+---
+title: "Основы обработки данных с помощью R"
+output: html_document
+date: "2022-10-19"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Цель работы
+ 1. Развить практические навыки использования языка программирования R для обработки данных
+ 2. Закрепить знания юазовых типов данных языка R
+ 3. Развить прктические навыки использованияфункций обработки данных пакета dplyr - функции select(), filter(), mutate(), arrange(), group_by()
+
+## Подготовка
+```{r}
+library(dplyr)
+starwars
+starwars <- starwars
+```
+
+## Задание
+Проанализировать сроенный в пакет dplyr набор данных starwars с помощью языка R и ответить на вопросы:
+
+### 1. Сколько строк в датафрейме?
+```{r}
+starwars %>% nrow()
+```
+### 2.Сколько столбцов в датафрейме?
+```{r}
+starwars %>% ncol()
+```
+### 3. Как посмотреть примерный вид датафрейма?
+```{r}
+starwars %>% glimpse()
+```
+### 4. Сколько уникальных рас персонажей (species) представлено в данных?
+```{r}
+length(unique(starwars$species))
+```
+### 5. Найти самого высокого персонажа.
+```{r}
+starwars %>% filter(height==max(na.omit(starwars$height)))
+```
+### 6. Найти всех персонажей ниже 170.
+```{r}
+na.omit(starwars$height)
+starwars %>% filter (height<170)
+```
+### 7. Подсчитать ИМТ (индекс массы тела) для всех персонажей. 
+ИМТ подсчитать по формуле I=m/h^2, где m - масса (weight), а h - рост (height).
+```{r}
+starwars %>%
+  mutate(imt = mass / ((height*0.01) ^ 2)) %>%
+  select(name,imt)
+```
+### 8. Найти 10 самых "вытянутых" персонажей.
+"Вытянутость" оценить по отношению массы (mass) к росту (height) персонажей.
+```{r}
+starwars %>%
+  mutate(elongation = mass/(height*0.01)) %>%
+  arrange(desc(elongation)) %>%
+  head(10) %>%
+  select(name,elongation)
+```
+
+### 9. Найти средний рост возраст персонажей каждой расы вселенной Звездных войн.
+```{r}
+starwars %>%
+  filter(!(birth_year %in% NA)) %>% 
+  filter(!(species %in% NA)) %>%
+  group_by(species) %>%
+  summarise(mean_age = mean(birth_year))
+```
+###  10. Найти самый распространенный цвет глаз персонажей вселенной Звездных войн.
+```{r}
+starwars %>%
+  filter(!(eye_color %in% NA)) %>%
+  count(eye_color, sort = TRUE) %>%
+  head(1)
+```
+### 11. Подсчитать среднюю длину имени в каждой расе вселенной Звездных войн.
+```{r}
+starwars %>%
+  filter(!(species %in% NA)) %>%
+  group_by(species) %>% 
+  summarise(mean_len_name = mean(nchar(name)))
+```
